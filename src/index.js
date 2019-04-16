@@ -1,3 +1,3 @@
-export default function yo () {
-  console.log('YO')
-}
+import fetchLiteral from './fetchLiteral'
+
+export default fetchLiteral
