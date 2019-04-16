@@ -1,42 +1,39 @@
-const mapToJson = m =>
-  m.size
-    ? [...m.entries()].reduce(
-      (map, [key, value]) => ({ ...map, [key]: value }),
-      {}
-    )
-    : undefined
+const inso = require('insensitive-object')
+
+const isDefined = x => typeof x !== 'undefined'
+
+const isEmptyObject = obj => Object.keys(obj).length === 0
+
+const trimmedContentTypes = [/^application\/json/]
 
 export default function parseFetch (content) {
   const { method, path } = extractRequestLine(content)
-  const headersMap = extractHeaders(content)
-  const contentType = headersMap.get('content-type')
+  const headers = extractHeaders(content)
+  const contentType = inso.get(headers, 'content-type')
 
   const body = extractBody(content, contentType)
 
   let url
   if (path[0] === '/') {
     // no host given in request line, looking in headers
-    const host = headersMap.get('host')
-    headersMap.delete('host')
+    const host = inso.get(headers, 'host')
+    inso.remove(headers, 'host')
     url = 'http://' + host + path
   } else {
     url = path
   }
 
-  const optionsMap = new Map()
-  if (body) optionsMap.set('body', body)
-  if (method && !method.match(/^get$/i)) optionsMap.set('method', method)
+  const options = {}
+  if (body) options.body = body
+  if (method && !method.match(/^get$/i)) options.method = method
 
-  const headers = mapToJson(headersMap)
-  if (headers) optionsMap.set('headers', headers)
-  const options = mapToJson(optionsMap)
+  if (!isEmptyObject(headers)) options.headers = headers
 
-  return JSON.parse(
-    JSON.stringify({
-      url,
-      options
-    })
-  )
+  const result = { url }
+  if (!isEmptyObject(options)) {
+    result.options = options
+  }
+  return result
 }
 
 function extractRequestLine (content) {
@@ -52,31 +49,42 @@ function extractRequestLine (content) {
 }
 
 function extractHeaders (content) {
-  const contentParts = content.split(/\n\n|\r\n\r\n/, 2)
+  const contentParts = content.split(/(\n([ \t]*)\n)|(\r\n([ \t]*)\r\n)/, 2)
   const head = contentParts.length === 2 ? contentParts[0] : content
 
-  const headers = new Map()
+  const headers = {}
 
-  const headerBlock = head.replace(/^\s+.*(\r?\n)/, '')
+  const headerBlock = head.replace(/^\s+/, '').replace(/^[^\n]*(\n|$)/, '') // strip away request line
   if (headerBlock) {
     for (let line of headerBlock.split(/\r?\n/g)) {
       const lineParts = /^\s+([^:]+):\s*(.*)\s*$/.exec(line)
       if (lineParts) {
-        headers.set(lineParts[1].toLowerCase(), lineParts[2])
+        const key = lineParts[1]
+        const value = lineParts[2].trim()
+        const currentValue = inso.get(headers, key)
+        if (isDefined(currentValue)) {
+          inso.set(headers, key, `${currentValue}, ${value}`, {
+            keepOriginalCasing: true
+          })
+        } else {
+          inso.set(headers, key, value)
+        }
       }
     }
   }
   return headers
 }
 
+// Everything after the first two blank lines
 function extractBody (content, contentType) {
-  const contentParts = content.split(/\n\n|\r\n\r\n/, 2)
-  if (contentParts.length === 2) {
-    const rawBody = contentParts.length === 2 ? contentParts[1] : content
+  const contentParts = content.split(/\n[ \t]*\n|\r\n[ \t]*\r\n/, 2)
+  if (contentParts.length === 1) return null
 
-    const shouldTrimBody =
-      contentType && contentType.match(/^application\/json/)
+  const rawBody = contentParts[1]
 
-    return shouldTrimBody ? rawBody.trim() : rawBody
-  }
+  const shouldTrimBody =
+    contentType &&
+    trimmedContentTypes.find(matcher => contentType.match(matcher))
+
+  return shouldTrimBody ? rawBody.trim() : rawBody
 }

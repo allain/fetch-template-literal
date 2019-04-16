@@ -36,5 +36,8 @@
         "@pika/plugin-build-web"
       ]
     ]
+  },
+  "dependencies": {
+    "insensitive-object": "^0.2.0"
   }
 }

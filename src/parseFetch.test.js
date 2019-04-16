@@ -18,7 +18,7 @@ describe('parseFetch', () => {
     })
   })
 
-  it('converts headers to lowercase', () => {
+  it('leaves header case untouched', () => {
     const parsed = parseFetch(`
       GET https://testing.com/
       ThIsIsFuN: blah
@@ -27,10 +27,44 @@ describe('parseFetch', () => {
       url: 'https://testing.com/',
       options: {
         headers: {
-          thisisfun: 'blah'
+          ThIsIsFuN: 'blah'
         }
       }
     })
+  })
+
+  it('parses case when no headers given', () => {
+    const parsed = parseFetch(`
+    POST https://testing.com/
+    
+    Blah Blah`)
+    expect(parsed).toEqual({
+      url: 'https://testing.com/',
+      options: {
+        body: '    Blah Blah',
+        method: 'POST'
+      }
+    })
+  })
+
+  it('handles multiple headers with same name as fetch does', () => {
+    const parsed = parseFetch(`
+      GET https://testing.com/
+      A: 1 
+      A: 2 
+      A: 3 
+    `)
+    expect(parsed.options.headers).toEqual({ A: '1, 2, 3' })
+  })
+
+  it('aggregates headers into header first encountered, regardless of case', () => {
+    const parsed = parseFetch(`
+      GET https://testing.com/
+      AA: 1 
+      aA: 2 
+      Aa: 3 
+    `)
+    expect(parsed.options.headers).toEqual({ AA: '1, 2, 3' })
   })
 
   it('can parse headers when no body', () => {
@@ -43,8 +77,8 @@ describe('parseFetch', () => {
       url: 'http://testing.com',
       options: {
         headers: {
-          foo: 'Bar',
-          fuzz: 'Bizz'
+          Foo: 'Bar',
+          Fuzz: 'Bizz'
         }
       }
     })
@@ -63,7 +97,7 @@ describe('parseFetch', () => {
       options: {
         method: 'POST',
         headers: {
-          'content-type': 'application/json'
+          'Content-Type': 'application/json'
         },
         body: '{"a":10,"b":{"c":true}}'
       }
