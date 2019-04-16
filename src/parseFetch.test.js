@@ -18,7 +18,7 @@ describe('parseFetch', () => {
     })
   })
 
-  it('converts headers to loweracse', () => {
+  it('converts headers to lowercase', () => {
     const parsed = parseFetch(`
       GET https://testing.com/
       ThIsIsFuN: blah
