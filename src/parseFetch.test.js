@@ -18,6 +18,21 @@ describe('parseFetch', () => {
     })
   })
 
+  it('converts headers to loweracse', () => {
+    const parsed = parseFetch(`
+      GET https://testing.com/
+      ThIsIsFuN: blah
+    `)
+    expect(parsed).toEqual({
+      url: 'https://testing.com/',
+      options: {
+        headers: {
+          thisisfun: 'blah'
+        }
+      }
+    })
+  })
+
   it('can parse headers when no body', () => {
     const parsed = parseFetch(`
     GET http://testing.com
@@ -28,8 +43,8 @@ describe('parseFetch', () => {
       url: 'http://testing.com',
       options: {
         headers: {
-          Foo: 'Bar',
-          Fuzz: 'Bizz'
+          foo: 'Bar',
+          fuzz: 'Bizz'
         }
       }
     })
@@ -48,7 +63,7 @@ describe('parseFetch', () => {
       options: {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json'
+          'content-type': 'application/json'
         },
         body: '{"a":10,"b":{"c":true}}'
       }

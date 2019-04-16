@@ -9,15 +9,15 @@ const mapToJson = m =>
 export default function parseFetch (content) {
   const { method, path } = extractRequestLine(content)
   const headersMap = extractHeaders(content)
-  const contentType = headersMap.get('Content-Type')
+  const contentType = headersMap.get('content-type')
 
   const body = extractBody(content, contentType)
 
   let url
   if (path[0] === '/') {
     // no host given in request line, looking in headers
-    const host = headersMap.get('Host')
-    headersMap.delete('Host')
+    const host = headersMap.get('host')
+    headersMap.delete('host')
     url = 'http://' + host + path
   } else {
     url = path
@@ -40,7 +40,7 @@ export default function parseFetch (content) {
 }
 
 function extractRequestLine (content) {
-  const requestLineParts = /^\s*([A-Z]+)\s+([^\s]+)(\s+([^\s+]))?(\r?\n|$)/.exec(
+  const requestLineParts = /^\s*([A-Z]+)\s+([^\s]+)(\s+([^\s+]))?\s*(\r?\n|$)/.exec(
     content
   )
 
@@ -49,16 +49,6 @@ function extractRequestLine (content) {
     path: requestLineParts[2],
     httpVersion: requestLineParts[4]
   }
-}
-
-function extractBody (content, contentType) {
-  const contentParts = content.split(/\n\n|\r\n\r\n/, 2)
-  if (contentParts.length !== 2) return
-  const rawBody = contentParts.length === 2 ? contentParts[1] : content
-
-  const shouldTrimBody = contentType && contentType.match(/^application\/json/)
-
-  return shouldTrimBody ? rawBody.trim() : rawBody
 }
 
 function extractHeaders (content) {
@@ -72,9 +62,21 @@ function extractHeaders (content) {
     for (let line of headerBlock.split(/\r?\n/g)) {
       const lineParts = /^\s+([^:]+):\s*(.*)\s*$/.exec(line)
       if (lineParts) {
-        headers.set(lineParts[1], lineParts[2])
+        headers.set(lineParts[1].toLowerCase(), lineParts[2])
       }
     }
   }
   return headers
+}
+
+function extractBody (content, contentType) {
+  const contentParts = content.split(/\n\n|\r\n\r\n/, 2)
+  if (contentParts.length === 2) {
+    const rawBody = contentParts.length === 2 ? contentParts[1] : content
+
+    const shouldTrimBody =
+      contentType && contentType.match(/^application\/json/)
+
+    return shouldTrimBody ? rawBody.trim() : rawBody
+  }
 }
