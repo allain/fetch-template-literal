@@ -1,4 +1,4 @@
-const inso = require('insensitive-object')
+import inso from 'insensitive-object'
 
 const isDefined = x => typeof x !== 'undefined'
 
