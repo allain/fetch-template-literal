@@ -19,7 +19,7 @@ const result = await ftl`
 
   {"example": true}`
 
-// result is a fetch result and exposes the expected fields (like .json(), .status, etc)
+// result is a fetch Response and exposes the expected fields (like .json(), .status, etc)
 const json = await result.json()
 ```
 
@@ -31,13 +31,13 @@ const json = await result.json()
 const fetch = require('node-fetch') 
 const ftl = require('fetch-template-literal')(fetch)
 
-const content = await ftl`
+const result = await ftl`
   POST https://httpbin.org/post/
   Content-Type: application/json
 
   {"example": true}`
 
-// result is a fetch Response result and exposes the expected fields (like .json(), .status, etc)
+// result is a fetch Response and exposes the expected fields (like .json(), .status, etc)
 const json = await result.json()
 ```
 
