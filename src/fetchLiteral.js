@@ -1,19 +1,23 @@
 import parseFetch from './parseFetch.js'
 
-function fetchLiteral (template, ...substitutions) {
-  if (typeof template === 'function') {
-    const fetch = template
-    return (template, ...substitutions) =>
-      doFetch(String.raw(template, ...substitutions), fetch)
-  } else {
-    // normal template path
-    return doFetch(String.raw(template, ...substitutions), global.fetch)
-  }
+const interpolate = (template, substitutions) =>
+  typeof template === 'string'
+    ? template // no-op
+    : String.raw(template, ...substitutions)
 
-  function doFetch (requestSpec, fetch) {
-    const parsed = parseFetch(requestSpec)
-    return fetch(parsed.url, parsed.options)
-  }
+function performFetch (requestSpec, fetch) {
+  const parsed = parseFetch(requestSpec)
+  return fetch(parsed.url, parsed.options)
 }
 
+function fetchLiteral (template, ...substitutions) {
+  return typeof template === 'function'
+    ? buildFetcherLiteral(template)
+    : performFetch(interpolate(template, substitutions), global.fetch)
+}
+
+function buildFetcherLiteral (fetch) {
+  return (template, ...substitutions) =>
+    performFetch(interpolate(template, substitutions), fetch)
+}
 export default fetchLiteral

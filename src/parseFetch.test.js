@@ -8,6 +8,13 @@ describe('parseFetch', () => {
     })
   })
 
+  it('parses and ignores version', () => {
+    const parsed = parseFetch('GET http://testing.com HTTP/1.0')
+    expect(parsed).toEqual({
+      url: 'http://testing.com'
+    })
+  })
+
   it('constructs full url from headers', () => {
     const parsed = parseFetch(`
       GET /

@@ -1,7 +1,7 @@
 {
   "name": "fetch-template-literal",
-  "version": "0.1.0",
-  "description": "A utility for making http requests using fetch in a different way",
+  "version": "1.0.0",
+  "description": "A tool for making http requests using template literals and fetch",
   "main": "index.js",
   "scripts": {
     "test": "jest --config jest.config.js"

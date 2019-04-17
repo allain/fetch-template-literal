@@ -37,7 +37,7 @@ export default function parseFetch (content) {
 }
 
 function extractRequestLine (content) {
-  const requestLineParts = /^\s*([A-Z]+)\s+([^\s]+)(\s+([^\s+]))?\s*(\r?\n|$)/.exec(
+  const requestLineParts = /^\s*([A-Z]+)\s+([^\s]+)(\s+([^\s]+))?\s*(\r?\n|$)/.exec(
     content
   )
 
