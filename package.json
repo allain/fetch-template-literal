@@ -1,6 +1,6 @@
 {
   "name": "fetch-template-literal",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "A tool for making http requests using template literals and fetch",
   "main": "index.js",
   "scripts": {
