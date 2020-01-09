@@ -11,7 +11,7 @@ npm install --save fetch-template-literal
 ## Browser Usage (with bundler)
 
 ```js
-const ftl = require('fetch-template-literal')
+const ftl = require('fetch-template-literal').default
 
 const result = await ftl`
   POST https://httpbin.org/post/
@@ -29,7 +29,7 @@ const json = await result.json()
 `node.js` doesn't support fetch by default, so `fetch-template-literal` can be used as a factory function into which you pass the implementation of fetch you want to use. The example below uses node-fetch.
 ```js
 const fetch = require('node-fetch') 
-const ftl = require('fetch-template-literal')(fetch)
+const ftl = require('fetch-template-literal').default(fetch)
 
 const result = await ftl`
   POST https://httpbin.org/post/
